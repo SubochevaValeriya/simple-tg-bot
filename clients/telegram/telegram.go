@@ -5,12 +5,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"image"
 	"io"
 	"log"
 	"math/rand"
 	"net/http"
 	"strconv"
 	"strings"
+	randoms "tgBot/pkg"
 	"time"
 )
 
@@ -107,13 +109,21 @@ type message struct {
 	ChatId      int         `json:"chat_id"`
 	Text        string      `json:"text"`
 	ReplyMarkup replyMarkup `json:"reply_markup,omitempty"`
+	Photo       image.Image `json:"photo,omitempty"`
 }
 
 func (b Bot) SendMessage(ctx context.Context, res UpdateResult) {
 
+	var photo image.Image = nil
+	var err error
 	txt := strings.TrimSpace(res.Message.Text)
-	replyText := fmt.Sprintf("Привет %s 👋", res.Message.From.FirstName)
+	replyText := fmt.Sprintf("Привет, %s 👋", res.Message.From.FirstName)
 	var keyboard [][]string
+	if txt == "Random cat" {
+		photo, err = randoms.RandomCat()
+		log.Printf("Can't find random cat: %w", err)
+	}
+
 	if strings.HasSuffix(txt, "+") {
 		keyboard = [][]string{
 			{txt + " " + strconv.Itoa(b.rand.Intn(100)) + " =", txt + " " + strconv.Itoa(b.rand.Intn(100)) + " ="},
@@ -129,14 +139,17 @@ func (b Bot) SendMessage(ctx context.Context, res UpdateResult) {
 		replyText = fmt.Sprint(sum)
 	} else {
 		keyboard = [][]string{
-			{strconv.Itoa(b.rand.Intn(100)) + " +", strconv.Itoa(b.rand.Intn(100)) + " +"},
-			{strconv.Itoa(b.rand.Intn(100)) + " +", strconv.Itoa(b.rand.Intn(100)) + " +"},
+			{"Random fact"},
+			{"Random activity"},
+			{"Random cat"},
+			{"Random number"},
 		}
 	}
 	msg := message{
 		ChatId:      res.Message.Chat.ID,
 		Text:        replyText,
 		ReplyMarkup: replyMarkup{Keyboard: keyboard},
+		Photo:       photo,
 	}
 	byt, err := json.Marshal(msg)
 	if err != nil {
