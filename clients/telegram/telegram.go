@@ -10,7 +10,6 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
-	"strconv"
 	"strings"
 	randoms "tgBot/pkg"
 	"time"
@@ -119,6 +118,12 @@ func (b Bot) SendMessage(ctx context.Context, res UpdateResult) {
 	txt := strings.TrimSpace(res.Message.Text)
 	replyText := fmt.Sprintf("Привет, %s 👋", res.Message.From.FirstName)
 	var keyboard [][]string
+	keyboard = [][]string{
+		{"Random fact"},
+		{"Random activity"},
+		{"Random cat"},
+		{"Random number"},
+	}
 	if txt == "Random cat" {
 		photo, err = randoms.RandomCat()
 		if err != nil {
@@ -130,27 +135,23 @@ func (b Bot) SendMessage(ctx context.Context, res UpdateResult) {
 		fmt.Errorf("can't get random fact: %w", err)
 	}
 
-	if strings.HasSuffix(txt, "+") {
+	if txt == "Random activity" {
 		keyboard = [][]string{
-			{txt + " " + strconv.Itoa(b.rand.Intn(100)) + " =", txt + " " + strconv.Itoa(b.rand.Intn(100)) + " ="},
-			{txt + " " + strconv.Itoa(b.rand.Intn(100)) + " =", txt + " " + strconv.Itoa(b.rand.Intn(100)) + " ="},
-		}
-	} else if strings.HasSuffix(txt, "=") {
-		split := strings.Split(txt[0:strings.LastIndex(txt, "=")], "+")
-		sum := 0
-		for _, s := range split {
-			atoi, _ := strconv.Atoi(strings.TrimSpace(s))
-			sum += atoi
-		}
-		replyText = fmt.Sprint(sum)
-	} else {
-		keyboard = [][]string{
-			{"Random fact"},
-			{"Random activity"},
-			{"Random cat"},
-			{"Random number"},
+			{"1 participant"},
+			{"More than 1 participant"},
 		}
 	}
+
+	if txt == "1 participant" {
+		replyText, err = randoms.RandomActivity(1, 1)
+		fmt.Errorf("can't get random activity: %w", err)
+	}
+
+	if txt == "More than 1 participant" {
+		replyText, err = randoms.RandomActivity(2, 20)
+		fmt.Errorf("can't get random activity: %w", err)
+	}
+
 	msg := message{
 		ChatId:      res.Message.Chat.ID,
 		Text:        replyText,
