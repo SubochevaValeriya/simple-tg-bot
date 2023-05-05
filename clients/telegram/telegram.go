@@ -124,14 +124,6 @@ func (b Bot) SendMessage(ctx context.Context, res UpdateResult) {
 		{"Random answer"},
 		{"Random dog"},
 	}
-	//if txt == "Random cat" {
-	//	//photo, err := randoms.RandomCat()
-	//	//if err != nil {
-	//	//	fmt.Errorf("can't get random cat: %w", err)
-	//	//}
-	//	photoURL = "https://cataas.com/cat"
-	//
-	//}
 
 	switch txt {
 	case "/start":
@@ -145,7 +137,7 @@ func (b Bot) SendMessage(ctx context.Context, res UpdateResult) {
 		animation = answer.Image
 		caption = answer.Answer
 	case "Random dog":
-		photoURL, err = randoms.RandomDog()
+		photoURL, animation, err = randoms.RandomDog()
 		if err != nil {
 			fmt.Errorf("can't get random dog: %w", err)
 		}
