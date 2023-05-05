@@ -115,50 +115,30 @@ func (b Bot) SendMessage(ctx context.Context, res UpdateResult) {
 	var err error
 	txt := strings.TrimSpace(res.Message.Text)
 	var replyText string
-	if txt == "/start" {
-		replyText = fmt.Sprintf("Привет, %s 👋", res.Message.From.FirstName)
-	}
+	var photoURL string
+	//if txt == "/start" {
+	replyText = fmt.Sprintf("Привет, %s 👋", res.Message.From.FirstName)
+	//}
 	var keyboard [][]string
 	keyboard = [][]string{
 		{"Random fact"},
 		{"Random activity"},
 		{"Random cat"},
-		{"Random number"},
+		{"Random dog"},
 	}
 	if txt == "Random cat" {
 		//photo, err := randoms.RandomCat()
 		//if err != nil {
 		//	fmt.Errorf("can't get random cat: %w", err)
 		//}
+		photoURL = "https://cataas.com/cat"
 
-		msg := message{
-			ChatId:      res.Message.Chat.ID,
-			Photo:       "https://cataas.com/cat",
-			ReplyMarkup: replyMarkup{Keyboard: keyboard},
-		}
-		byt, err := json.Marshal(msg)
-		if err != nil {
-			log.Println("bot sendMessage error:", err)
-			return
-		}
-		fmt.Printf("msg='%+v'\n", msg)
+	}
 
-		req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("https://api.telegram.org/bot%s/sendPhoto", b.token, res.Message.Chat.ID), bytes.NewReader(byt))
+	if txt == "Random dog" {
+		photoURL, err = randoms.RandomDog()
 		if err != nil {
-			log.Println("bot sendMessage error:", err)
-			return
-		}
-		req.Header.Add("Content-Type", "application/json")
-		response, err := b.httpClient.Do(req)
-		if err != nil {
-			log.Println("bot sendMessage error:", err)
-			return
-		}
-		if response.StatusCode != 200 {
-			bytes, _ := io.ReadAll(response.Body)
-			defer response.Body.Close()
-			log.Println("bot sendMessage error:", string(bytes))
-			return
+			fmt.Errorf("can't get random cat: %w", err)
 		}
 	}
 
@@ -194,6 +174,7 @@ func (b Bot) SendMessage(ctx context.Context, res UpdateResult) {
 		ChatId:      res.Message.Chat.ID,
 		Text:        replyText,
 		ReplyMarkup: replyMarkup{Keyboard: keyboard},
+		Photo:       photoURL,
 	}
 
 	byt, err := json.Marshal(msg)
@@ -202,10 +183,19 @@ func (b Bot) SendMessage(ctx context.Context, res UpdateResult) {
 		return
 	}
 	fmt.Printf("msg='%+v'\n", msg)
-	req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", b.token), bytes.NewReader(byt))
-	if err != nil {
-		log.Println("bot sendMessage error:", err)
-		return
+	var req *http.Request
+	if msg.Photo != "" {
+		req, err = http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("https://api.telegram.org/bot%s/sendPhoto", b.token, res.Message.Chat.ID), bytes.NewReader(byt))
+		if err != nil {
+			log.Println("bot sendMPhoto error:", err)
+			return
+		}
+	} else {
+		req, err = http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", b.token), bytes.NewReader(byt))
+		if err != nil {
+			log.Println("bot sendMessage error:", err)
+			return
+		}
 	}
 	req.Header.Add("Content-Type", "application/json")
 	response, err := b.httpClient.Do(req)
