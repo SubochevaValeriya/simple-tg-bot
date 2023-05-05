@@ -9,12 +9,12 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"tgBot/internal/clients/telegram"
 )
 
 func init() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
-
 	bot := telegram.NewBot(http.Client{}, os.Getenv("BOT_TOKEN"))
 	err := bot.Start(ctx)
 	if err != nil {
