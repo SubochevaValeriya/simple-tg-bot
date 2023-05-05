@@ -131,20 +131,22 @@ func (b Bot) SendMessage(ctx context.Context, res UpdateResult) {
 	case "Random answer":
 		answer, err := randoms.RandomAnswer()
 		if err != nil {
-			fmt.Errorf("can't get random answer: %w", err)
-			break
+			log.Println("can't get random answer:", err)
+			return
 		}
 		animation = answer.Image
 		caption = answer.Answer
 	case "Random dog":
 		photoURL, animation, err = randoms.RandomDog()
 		if err != nil {
-			fmt.Errorf("can't get random dog: %w", err)
+			log.Println("can't get random dog:", err)
+			return
 		}
 	case "Random fact":
 		replyText, err = randoms.RandomFact()
 		if err != nil {
-			fmt.Errorf("can't get random fact: %w", err)
+			log.Println("can't get random fact", err)
+			return
 		}
 	case "Random activity":
 		replyText = "Choose number of participants"
@@ -156,12 +158,14 @@ func (b Bot) SendMessage(ctx context.Context, res UpdateResult) {
 	case "1 participant":
 		replyText, err = randoms.RandomActivity(1, 1)
 		if err != nil {
-			fmt.Errorf("can't get random activity: %w", err)
+			log.Println("can't get random activity:", err)
+			return
 		}
 	case "More than 1 participant":
 		replyText, err = randoms.RandomActivity(2, 20)
 		if err != nil {
-			fmt.Errorf("can't get random activity: %w", err)
+			log.Println("can't get random activity:", err)
+			return
 		}
 	}
 
@@ -180,14 +184,8 @@ func (b Bot) SendMessage(ctx context.Context, res UpdateResult) {
 		return
 	}
 	fmt.Printf("msg='%+v'\n", msg)
-	var req *http.Request
-	if msg.Photo != "" {
-		req, err = http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("https://api.telegram.org/bot%s/sendPhoto", b.token), bytes.NewReader(byt))
-	} else if msg.Animation != "" {
-		req, err = http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("https://api.telegram.org/bot%s/sendAnimation", b.token), bytes.NewReader(byt))
-	} else {
-		req, err = http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", b.token), bytes.NewReader(byt))
-	}
+
+	req, err := b.newRequest(ctx, msg, byt)
 
 	if err != nil {
 		log.Println("bot send error:", err)
@@ -205,5 +203,15 @@ func (b Bot) SendMessage(ctx context.Context, res UpdateResult) {
 		defer response.Body.Close()
 		log.Println("bot sendMessage error:", string(bytes))
 		return
+	}
+}
+
+func (b Bot) newRequest(ctx context.Context, msg message, byt []byte) (*http.Request, error) {
+	if msg.Photo != "" {
+		return http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("https://api.telegram.org/bot%s/sendPhoto", b.token), bytes.NewReader(byt))
+	} else if msg.Animation != "" {
+		return http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("https://api.telegram.org/bot%s/sendAnimation", b.token), bytes.NewReader(byt))
+	} else {
+		return http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", b.token), bytes.NewReader(byt))
 	}
 }
