@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"tgBot/internal/clients/telegram"
 )
 
 var bot *tgbotapi.BotAPI
@@ -57,7 +56,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	if update.Message.Text != "" {
 		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 
-		telegram.SendMsg(update, bot)
+		//telegram.SendMsg(update, bot)
 	}
 
 	if update.CallbackQuery != nil {
