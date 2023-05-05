@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-type updateResult struct {
+type UpdateResult struct {
 	UpdateID int `json:"update_id"`
 	Message  struct {
 		MessageID int `json:"message_id"`
@@ -38,7 +38,7 @@ type updateResult struct {
 
 type update struct {
 	Ok     bool           `json:"ok"`
-	Result []updateResult `json:"result"`
+	Result []UpdateResult `json:"result"`
 }
 
 type Bot struct {
@@ -84,7 +84,7 @@ func (b Bot) Start(ctx context.Context) error {
 
 			fmt.Printf("update='%+v'\n", update)
 			for _, res := range update.Result {
-				b.sendMessage(ctx, res)
+				b.SendMessage(ctx, res)
 			}
 			if len(update.Result) > 0 {
 				lastUpdateId = update.Result[0].UpdateID
@@ -109,7 +109,7 @@ type message struct {
 	ReplyMarkup replyMarkup `json:"reply_markup,omitempty"`
 }
 
-func (b Bot) sendMessage(ctx context.Context, res updateResult) {
+func (b Bot) SendMessage(ctx context.Context, res UpdateResult) {
 
 	txt := strings.TrimSpace(res.Message.Text)
 	replyText := fmt.Sprintf("Привет %s 👋", res.Message.From.FirstName)
