@@ -116,54 +116,56 @@ func (b Bot) SendMessage(ctx context.Context, res UpdateResult) {
 	txt := strings.TrimSpace(res.Message.Text)
 	var replyText string
 	var photoURL string
-	if txt == "/start" {
-		replyText = fmt.Sprintf("Привет, %s 👋", res.Message.From.FirstName)
-	}
 	var keyboard [][]string
 	keyboard = [][]string{
 		{"Random fact"},
 		{"Random activity"},
-		{"Random cat"},
+		{"Random answer"},
 		{"Random dog"},
 	}
-	if txt == "Random cat" {
-		//photo, err := randoms.RandomCat()
-		//if err != nil {
-		//	fmt.Errorf("can't get random cat: %w", err)
-		//}
-		photoURL = "https://cataas.com/cat"
+	//if txt == "Random cat" {
+	//	//photo, err := randoms.RandomCat()
+	//	//if err != nil {
+	//	//	fmt.Errorf("can't get random cat: %w", err)
+	//	//}
+	//	photoURL = "https://cataas.com/cat"
+	//
+	//}
 
-	}
-
-	if txt == "Random dog" {
+	switch txt {
+	case "/start":
+		replyText = fmt.Sprintf("Привет, %s 👋", res.Message.From.FirstName)
+	case "Random answer":
+		answer, err := randoms.RandomAnswer()
+		if err != nil {
+			fmt.Errorf("can't get random answer: %w", err)
+			break
+		}
+		photoURL = answer.Image
+		replyText = answer.Answer
+	case "Random dog":
 		photoURL, err = randoms.RandomDog()
 		if err != nil {
-			fmt.Errorf("can't get random cat: %w", err)
+			fmt.Errorf("can't get random dog: %w", err)
 		}
-	}
-
-	if txt == "Random fact" {
+	case "Random fact":
 		replyText, err = randoms.RandomFact()
 		if err != nil {
 			fmt.Errorf("can't get random fact: %w", err)
 		}
-	}
-
-	if txt == "Random activity" {
+	case "Random activity":
+		replyText = "Choose number of participants"
 		keyboard = [][]string{
 			{"1 participant"},
 			{"More than 1 participant"},
 		}
-	}
 
-	if txt == "1 participant" {
+	case "1 participant":
 		replyText, err = randoms.RandomActivity(1, 1)
 		if err != nil {
 			fmt.Errorf("can't get random activity: %w", err)
 		}
-	}
-
-	if txt == "More than 1 participant" {
+	case "More than 1 participant":
 		replyText, err = randoms.RandomActivity(2, 20)
 		if err != nil {
 			fmt.Errorf("can't get random activity: %w", err)
@@ -190,13 +192,13 @@ func (b Bot) SendMessage(ctx context.Context, res UpdateResult) {
 			log.Println("bot sendMPhoto error:", err)
 			return
 		}
-	} else {
-		req, err = http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", b.token), bytes.NewReader(byt))
-		if err != nil {
-			log.Println("bot sendMessage error:", err)
-			return
-		}
 	}
+	req, err = http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", b.token), bytes.NewReader(byt))
+	if err != nil {
+		log.Println("bot sendMessage error:", err)
+		return
+	}
+
 	req.Header.Add("Content-Type", "application/json")
 	response, err := b.httpClient.Do(req)
 	if err != nil {
