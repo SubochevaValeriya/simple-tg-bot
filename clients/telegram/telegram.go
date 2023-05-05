@@ -167,6 +167,8 @@ func (b Bot) SendMessage(ctx context.Context, res UpdateResult) {
 			log.Println("can't get random activity:", err)
 			return
 		}
+	default:
+		replyText = "Please select command from the list"
 	}
 
 	msg := message{
