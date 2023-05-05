@@ -185,7 +185,7 @@ func (b Bot) SendMessage(ctx context.Context, res UpdateResult) {
 	fmt.Printf("msg='%+v'\n", msg)
 	var req *http.Request
 	if msg.Photo != "" {
-		req, err = http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("https://api.telegram.org/bot%s/sendPhoto", b.token, res.Message.Chat.ID), bytes.NewReader(byt))
+		req, err = http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("https://api.telegram.org/bot%s/sendPhoto", b.token), bytes.NewReader(byt))
 		if err != nil {
 			log.Println("bot sendMPhoto error:", err)
 			return
