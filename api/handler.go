@@ -16,13 +16,13 @@ import (
 var bot *telegram.Bot
 
 func init() {
-	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	_, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 	bot = telegram.NewBot(http.Client{}, os.Getenv("BOT_TOKEN"))
-	err := bot.Start(ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
+	//err := bot.Start(ctx)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
 	//var err error
 	//bot, err = tgbotapi.NewBotAPI(os.Getenv("BOT_TOKEN"))
 	//if err != nil {
@@ -41,7 +41,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	var update telegram.UpdateResult
 
 	err = json.Unmarshal(body, &update)
-
+	fmt.Println(update)
 	fmt.Println(body)
 	bot.SendMessage(context.Background(), update)
 
