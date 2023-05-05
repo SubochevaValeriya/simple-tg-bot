@@ -2,6 +2,8 @@ package randoms
 
 import (
 	"encoding/json"
+	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -23,13 +25,19 @@ func RandomFact() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	fact := Fact{Fact: ""}
-	err = json.NewDecoder(resp.Body).Decode(&fact)
+	data, err := io.ReadAll(resp.Body)
+	fmt.Println(string(data))
+	if err != nil {
+		return "", err
+	}
+	var fact []Fact
+
+	err = json.Unmarshal(data, &fact)
 	if err != nil {
 		return "", err
 	}
 
 	log.Println(fact)
 
-	return fact.Fact, nil
+	return fact[0].Fact, nil
 }
