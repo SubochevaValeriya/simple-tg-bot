@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -12,10 +13,12 @@ import (
 	"tgBot/clients/telegram"
 )
 
+var bot *telegram.Bot
+
 func init() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
-	bot := telegram.NewBot(http.Client{}, os.Getenv("BOT_TOKEN"))
+	bot = telegram.NewBot(http.Client{}, os.Getenv("BOT_TOKEN"))
 	err := bot.Start(ctx)
 	if err != nil {
 		log.Fatal(err)
@@ -35,7 +38,12 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println(err)
 	}
+	var update telegram.UpdateResult
+
+	err = json.Unmarshal(body, &update)
+
 	fmt.Println(body)
+	bot.SendMessage(context.Background(), update)
 
 	//var update tgbotapi.Update
 	//
