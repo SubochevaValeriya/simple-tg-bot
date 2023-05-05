@@ -109,13 +109,14 @@ type message struct {
 	ReplyMarkup replyMarkup `json:"reply_markup,omitempty"`
 	Photo       string      `json:"photo,omitempty"`
 	Caption     string      `json:"caption,omitempty"`
+	Animation   string      `json:"animation,omitempty"`
 }
 
 func (b Bot) SendMessage(ctx context.Context, res UpdateResult) {
 
 	var err error
 	txt := strings.TrimSpace(res.Message.Text)
-	var replyText, photoURL, caption string
+	var replyText, photoURL, caption, animation string
 	var keyboard [][]string
 	keyboard = [][]string{
 		{"Random fact"},
@@ -141,7 +142,7 @@ func (b Bot) SendMessage(ctx context.Context, res UpdateResult) {
 			fmt.Errorf("can't get random answer: %w", err)
 			break
 		}
-		photoURL = answer.Image
+		animation = answer.Image
 		caption = answer.Answer
 	case "Random dog":
 		photoURL, err = randoms.RandomDog()
@@ -178,6 +179,7 @@ func (b Bot) SendMessage(ctx context.Context, res UpdateResult) {
 		ReplyMarkup: replyMarkup{Keyboard: keyboard},
 		Photo:       photoURL,
 		Caption:     caption,
+		Animation:   animation,
 	}
 
 	byt, err := json.Marshal(msg)
@@ -189,16 +191,15 @@ func (b Bot) SendMessage(ctx context.Context, res UpdateResult) {
 	var req *http.Request
 	if msg.Photo != "" {
 		req, err = http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("https://api.telegram.org/bot%s/sendPhoto", b.token), bytes.NewReader(byt))
-		if err != nil {
-			log.Println("bot sendMPhoto error:", err)
-			return
-		}
+	} else if msg.Animation != "" {
+		req, err = http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("https://api.telegram.org/bot%s/sendAnimation", b.token), bytes.NewReader(byt))
 	} else {
 		req, err = http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", b.token), bytes.NewReader(byt))
-		if err != nil {
-			log.Println("bot sendMessage error:", err)
-			return
-		}
+	}
+
+	if err != nil {
+		log.Println("bot send error:", err)
+		return
 	}
 
 	req.Header.Add("Content-Type", "application/json")
