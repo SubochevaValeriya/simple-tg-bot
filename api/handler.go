@@ -9,7 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"tgBot/internal/clients/telegram"
+	"tgBot/clients/telegram"
 )
 
 func init() {
