@@ -110,6 +110,7 @@ type message struct {
 }
 
 func (b Bot) sendMessage(ctx context.Context, res updateResult) {
+
 	txt := strings.TrimSpace(res.Message.Text)
 	replyText := fmt.Sprintf("Привет %s 👋", res.Message.From.FirstName)
 	var keyboard [][]string
