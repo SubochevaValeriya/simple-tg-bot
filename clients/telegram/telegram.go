@@ -113,7 +113,6 @@ type message struct {
 
 func (b Bot) SendMessage(ctx context.Context, res UpdateResult) {
 
-	var photo image.Image = nil
 	var err error
 	txt := strings.TrimSpace(res.Message.Text)
 	replyText := fmt.Sprintf("Привет, %s 👋", res.Message.From.FirstName)
@@ -125,9 +124,26 @@ func (b Bot) SendMessage(ctx context.Context, res UpdateResult) {
 		{"Random number"},
 	}
 	if txt == "Random cat" {
-		photo, err = randoms.RandomCat()
+		photo, err := randoms.RandomCat()
 		if err != nil {
 			fmt.Errorf("can't get random cat: %w", err)
+		}
+		req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("https://api.telegram.org/bot%s/sendPhoto?chat_id=%v", b.token, res.Message.Chat.ID), bytes.NewReader(photo))
+		if err != nil {
+			log.Println("bot sendMessage error:", err)
+			return
+		}
+		req.Header.Add("Content-Type", "multipart/form-data")
+		response, err := b.httpClient.Do(req)
+		if err != nil {
+			log.Println("bot sendMessage error:", err)
+			return
+		}
+		if response.StatusCode != 200 {
+			bytes, _ := io.ReadAll(response.Body)
+			defer response.Body.Close()
+			log.Println("bot sendMessage error:", string(bytes))
+			return
 		}
 	}
 	if txt == "Random fact" {
@@ -156,7 +172,6 @@ func (b Bot) SendMessage(ctx context.Context, res UpdateResult) {
 		ChatId:      res.Message.Chat.ID,
 		Text:        replyText,
 		ReplyMarkup: replyMarkup{Keyboard: keyboard},
-		Photo:       photo,
 	}
 	byt, err := json.Marshal(msg)
 	if err != nil {

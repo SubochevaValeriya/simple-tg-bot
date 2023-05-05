@@ -1,16 +1,20 @@
 package randoms
 
 import (
-	"image"
+	"io"
 	"net/http"
 )
 
-func RandomCat() (image.Image, error) {
+func RandomCat() ([]byte, error) {
 	resp, err := http.Get("https://cataas.com/cat")
 	if err != nil {
 		return nil, err
 	}
-	cat, _, err := image.Decode(resp.Body)
+	defer resp.Body.Close()
+	bytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
 
-	return cat, err
+	return bytes, err
 }

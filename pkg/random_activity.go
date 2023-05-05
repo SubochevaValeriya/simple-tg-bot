@@ -1,10 +1,14 @@
 package randoms
 
 import (
+	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 )
+
+type Activity struct {
+	Activity string `json:"activity"'`
+}
 
 func RandomActivity(minParticipants, maxParticipants int) (string, error) {
 	resp, err := http.Get(fmt.Sprintf("http://www.boredapi.com/api/activity?minparticipants=%v&maxparticipants=%v", minParticipants, maxParticipants))
@@ -12,11 +16,12 @@ func RandomActivity(minParticipants, maxParticipants int) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	b, err := io.ReadAll(resp.Body)
+	activity := Activity{Activity: ""}
 
+	err = json.NewDecoder(resp.Body).Decode(&activity)
 	if err != nil {
 		return "", err
 	}
 
-	return string(b), nil
+	return activity.Activity, nil
 }

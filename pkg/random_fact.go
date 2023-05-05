@@ -1,10 +1,14 @@
 package randoms
 
 import (
-	"io"
+	"encoding/json"
 	"net/http"
 	"os"
 )
+
+type Fact struct {
+	Fact string `json:"fact"'`
+}
 
 func RandomFact() (string, error) {
 	client := &http.Client{}
@@ -18,11 +22,12 @@ func RandomFact() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	b, err := io.ReadAll(resp.Body)
+	fact := Fact{Fact: ""}
 
+	err = json.NewDecoder(resp.Body).Decode(&fact)
 	if err != nil {
 		return "", err
 	}
 
-	return string(b), nil
+	return fact.Fact, nil
 }
