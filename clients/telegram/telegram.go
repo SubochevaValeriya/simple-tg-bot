@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"image"
 	"io"
 	"log"
 	"math/rand"
@@ -106,16 +105,19 @@ type replyMarkup struct {
 
 type message struct {
 	ChatId      int         `json:"chat_id"`
-	Text        string      `json:"text"`
+	Text        string      `json:"text,omitempty"`
 	ReplyMarkup replyMarkup `json:"reply_markup,omitempty"`
-	Photo       image.Image `json:"photo,omitempty"`
+	Photo       string      `json:"photo,omitempty"`
 }
 
 func (b Bot) SendMessage(ctx context.Context, res UpdateResult) {
 
 	var err error
 	txt := strings.TrimSpace(res.Message.Text)
-	replyText := fmt.Sprintf("Привет, %s 👋", res.Message.From.FirstName)
+	var replyText string
+	if txt == "/start" {
+		replyText = fmt.Sprintf("Привет, %s 👋", res.Message.From.FirstName)
+	}
 	var keyboard [][]string
 	keyboard = [][]string{
 		{"Random fact"},
@@ -124,16 +126,29 @@ func (b Bot) SendMessage(ctx context.Context, res UpdateResult) {
 		{"Random number"},
 	}
 	if txt == "Random cat" {
-		photo, err := randoms.RandomCat()
-		if err != nil {
-			fmt.Errorf("can't get random cat: %w", err)
+		//photo, err := randoms.RandomCat()
+		//if err != nil {
+		//	fmt.Errorf("can't get random cat: %w", err)
+		//}
+
+		msg := message{
+			ChatId:      res.Message.Chat.ID,
+			Photo:       "https://cataas.com/cat",
+			ReplyMarkup: replyMarkup{Keyboard: keyboard},
 		}
-		req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("https://api.telegram.org/bot%s/sendPhoto?chat_id=%v", b.token, res.Message.Chat.ID), bytes.NewReader(photo))
+		byt, err := json.Marshal(msg)
 		if err != nil {
 			log.Println("bot sendMessage error:", err)
 			return
 		}
-		req.Header.Add("Content-Type", "multipart/form-data")
+		fmt.Printf("msg='%+v'\n", msg)
+
+		req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("https://api.telegram.org/bot%s/sendPhoto", b.token, res.Message.Chat.ID), bytes.NewReader(byt))
+		if err != nil {
+			log.Println("bot sendMessage error:", err)
+			return
+		}
+		req.Header.Add("Content-Type", "application/json")
 		response, err := b.httpClient.Do(req)
 		if err != nil {
 			log.Println("bot sendMessage error:", err)
@@ -146,9 +161,12 @@ func (b Bot) SendMessage(ctx context.Context, res UpdateResult) {
 			return
 		}
 	}
+
 	if txt == "Random fact" {
 		replyText, err = randoms.RandomFact()
-		fmt.Errorf("can't get random fact: %w", err)
+		if err != nil {
+			fmt.Errorf("can't get random fact: %w", err)
+		}
 	}
 
 	if txt == "Random activity" {
@@ -160,12 +178,16 @@ func (b Bot) SendMessage(ctx context.Context, res UpdateResult) {
 
 	if txt == "1 participant" {
 		replyText, err = randoms.RandomActivity(1, 1)
-		fmt.Errorf("can't get random activity: %w", err)
+		if err != nil {
+			fmt.Errorf("can't get random activity: %w", err)
+		}
 	}
 
 	if txt == "More than 1 participant" {
 		replyText, err = randoms.RandomActivity(2, 20)
-		fmt.Errorf("can't get random activity: %w", err)
+		if err != nil {
+			fmt.Errorf("can't get random activity: %w", err)
+		}
 	}
 
 	msg := message{
@@ -173,6 +195,7 @@ func (b Bot) SendMessage(ctx context.Context, res UpdateResult) {
 		Text:        replyText,
 		ReplyMarkup: replyMarkup{Keyboard: keyboard},
 	}
+
 	byt, err := json.Marshal(msg)
 	if err != nil {
 		log.Println("bot sendMessage error:", err)
