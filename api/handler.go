@@ -3,7 +3,7 @@ package api
 import (
 	"context"
 	"encoding/json"
-	"github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"io"
 	"log"
 	"net/http"
@@ -13,13 +13,11 @@ import (
 	"tgBot/internal/clients/telegram"
 )
 
-var bot *tgbotapi.BotAPI
-
 func init() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	bot := telegram.NewBot(http.Client{}, os.Getenv("MYVKBOT_TOKEN"))
+	bot := telegram.NewBot(http.Client{}, os.Getenv("BOT_TOKEN"))
 	err := bot.Start(ctx)
 	if err != nil {
 		log.Fatal(err)
