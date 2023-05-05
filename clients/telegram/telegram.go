@@ -116,9 +116,9 @@ func (b Bot) SendMessage(ctx context.Context, res UpdateResult) {
 	txt := strings.TrimSpace(res.Message.Text)
 	var replyText string
 	var photoURL string
-	//if txt == "/start" {
-	replyText = fmt.Sprintf("Привет, %s 👋", res.Message.From.FirstName)
-	//}
+	if txt == "/start" {
+		replyText = fmt.Sprintf("Привет, %s 👋", res.Message.From.FirstName)
+	}
 	var keyboard [][]string
 	keyboard = [][]string{
 		{"Random fact"},
