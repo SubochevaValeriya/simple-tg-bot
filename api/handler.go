@@ -28,7 +28,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println(err)
 	}
-
+	log.Println("why")
 	var update tgbotapi.Update
 
 	err = json.Unmarshal(body, &update)
