@@ -121,7 +121,13 @@ func (b Bot) SendMessage(ctx context.Context, res UpdateResult) {
 	var keyboard [][]string
 	if txt == "Random cat" {
 		photo, err = randoms.RandomCat()
-		log.Printf("Can't find random cat: %w", err)
+		if err != nil {
+			fmt.Errorf("can't get random cat: %w", err)
+		}
+	}
+	if txt == "Random fact" {
+		replyText, err = randoms.RandomFact()
+		fmt.Errorf("can't get random fact: %w", err)
 	}
 
 	if strings.HasSuffix(txt, "+") {
