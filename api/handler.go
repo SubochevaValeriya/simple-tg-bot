@@ -2,8 +2,7 @@ package api
 
 import (
 	"context"
-	"encoding/json"
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -37,14 +36,15 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println(err)
 	}
+	fmt.Println(body)
 
-	var update tgbotapi.Update
-
-	err = json.Unmarshal(body, &update)
-	if err != nil {
-		log.Println(err)
-		return
-	}
+	//var update tgbotapi.Update
+	//
+	//err = json.Unmarshal(body, &update)
+	//if err != nil {
+	//	log.Println(err)
+	//	return
+	//}
 	//
 	//ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	//defer stop()
@@ -98,18 +98,18 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	//}
 }
 
-var firstLineButtons = tgbotapi.NewInlineKeyboardMarkup(
-	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("random fact", "random fact"),
-		tgbotapi.NewInlineKeyboardButtonData("random gif", "random gif"),
-		tgbotapi.NewInlineKeyboardButtonData("random cat", "random cat"),
-		tgbotapi.NewInlineKeyboardButtonData("random number", "random number"),
-	),
-)
-
-var secondLineButtons = tgbotapi.NewInlineKeyboardMarkup(
-	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("lower number", "lower number"),
-		tgbotapi.NewInlineKeyboardButtonData("large number", "large number"),
-	),
-)
+//var firstLineButtons = tgbotapi.NewInlineKeyboardMarkup(
+//	tgbotapi.NewInlineKeyboardRow(
+//		tgbotapi.NewInlineKeyboardButtonData("random fact", "random fact"),
+//		tgbotapi.NewInlineKeyboardButtonData("random gif", "random gif"),
+//		tgbotapi.NewInlineKeyboardButtonData("random cat", "random cat"),
+//		tgbotapi.NewInlineKeyboardButtonData("random number", "random number"),
+//	),
+//)
+//
+//var secondLineButtons = tgbotapi.NewInlineKeyboardMarkup(
+//	tgbotapi.NewInlineKeyboardRow(
+//		tgbotapi.NewInlineKeyboardButtonData("lower number", "lower number"),
+//		tgbotapi.NewInlineKeyboardButtonData("large number", "large number"),
+//	),
+//)
